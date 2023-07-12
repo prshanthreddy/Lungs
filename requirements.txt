@@ -5,3 +5,4 @@ tensorflow
 streamlit
 opencv-python
 scikit-image
+gdown
