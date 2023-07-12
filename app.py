@@ -6,14 +6,16 @@ from tensorflow.keras.applications.efficientnet import EfficientNetB7 as Pretrai
 from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, Dense
 from tensorflow.keras.models import Model
 from skimage.filters import threshold_otsu
+import requests
 import cv2
 import time
+import gdown
 
 X = Y = 224
 
 def preprocess_image(image, predicted_label):
-    img= cv2.imread(image.name)
-    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    img = cv2.imread(image.name)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     thresh = threshold_otsu(img_gray)
     img_otsu = img_gray < thresh
@@ -28,18 +30,25 @@ def preprocess_image(image, predicted_label):
             level = 3
         elif 200000 <= white_area < 3000000:
             level = 2
-        elif  100000 <= white_area < 200000:
+        elif 100000 <= white_area < 200000:
             level = 1
         elif white_area < 100000:
             level = 0
 
-        st.warning(f'Predicted as {predicted_label} in Level {level}')
+        if level == 3:
+            st.error("Predicted as  " + predicted_label + " with Level " + str(level))
+        elif level == 2:
+            st.warning("Predicted as  " + predicted_label + " with Level " + str(level))
+        elif level == 1:
+            st.info("Predicted as " + predicted_label + " with Level " + str(level))
+        elif level == 0:
+            st.success("Predicted as " + predicted_label + " with Level " + str(level))
     else:
         st.success("Predicted as Lung with Benign Tumor")
 
 # Create a Streamlit application
 def main():
-    st.title('Lung Cancer Detection using Deep Learning')
+    st.title('Lung Cancer Detection & Severity Level using Deep Learning')
     input_shape = (X, Y, 3)
     K = 3
     start_time = time.time()
@@ -55,8 +64,13 @@ def main():
     x = Dense(64, activation='relu')(x)
     y = Dense(K, activation='softmax')(x)
     model = Model(inputs=ptm.input, outputs=y)
-    model.load_weights('https://lungsbucket.s3.eu-north-1.amazonaws.com/lungs_weights.h5')
-    # model.save('lungs_model.h5')
+
+    # Download the weights file from Google Drive
+    weights_url = 'https://drive.google.com/uc?id=1Oj82VQTR188qR4qD2K-aJNKSG8q6UvJ7'
+    weights_path = 'lungs_weights.h5'
+    gdown.download(weights_url, weights_path, quiet=False)
+
+    model.load_weights(weights_path)
 
     label_map = {0: 'lung_aca', 1: 'lung_n', 2: 'lung_scc'}
 
@@ -74,7 +88,6 @@ def main():
         preprocess_image(uploaded_image, predicted_label)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        # st.write('Predicted Class:', predicted_label)
         st.write('Time taken to predict is approximately:', round(elapsed_time, 2), 'seconds')
         st.image(image, caption='Uploaded Image', width=300)
     else:
