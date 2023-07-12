@@ -55,7 +55,7 @@ def main():
     x = Dense(64, activation='relu')(x)
     y = Dense(K, activation='softmax')(x)
     model = Model(inputs=ptm.input, outputs=y)
-    model.load_weights('lungs_weights.h5')
+    model.load_weights('https://drive.google.com/file/d/1Oj82VQTR188qR4qD2K-aJNKSG8q6UvJ7/view?usp=sharing')
     # model.save('lungs_model.h5')
 
     label_map = {0: 'lung_aca', 1: 'lung_n', 2: 'lung_scc'}
