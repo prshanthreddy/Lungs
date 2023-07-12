@@ -7,7 +7,7 @@ from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, Dense
 from tensorflow.keras.models import Model
 from skimage.filters import threshold_otsu
 import requests
-import cv2
+import opencv as cv2
 import time
 import gdown
 
